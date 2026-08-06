@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="60" x2="1080" y2="570" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0b0b12"/>
+      <stop offset="100%" stop-color="#140f24"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="200" y1="130" x2="390" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="45%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="48" fill="url(#bg)"/>
+  <circle cx="1020" cy="120" r="210" fill="#7c3aed" opacity="0.16"/>
+  <circle cx="180" cy="520" r="260" fill="#a855f7" opacity="0.12"/>
+  <rect x="96" y="96" width="188" height="188" rx="56" fill="url(#accent)"/>
+  <rect x="130" y="130" width="120" height="120" rx="36" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="4"/>
+  <path d="M201 154.5c-24.64 0-44.5 19.86-44.5 44.5s19.86 44.5 44.5 44.5" stroke="white" stroke-width="22" stroke-linecap="round"/>
+  <path d="M170 178.5 202 200l-32 21.5v-43Z" fill="white"/>
+  <text x="338" y="198" fill="#f8f7ff" font-family="Inter, system-ui, sans-serif" font-size="72" font-weight="700" letter-spacing="-0.04em">Clipo AI</text>
+  <text x="338" y="260" fill="#b7b2ca" font-family="Inter, system-ui, sans-serif" font-size="30" font-weight="500">Turn long videos into scroll-stopping short clips.</text>
+  <rect x="338" y="320" width="408" height="10" rx="5" fill="#8b5cf6" opacity="0.7"/>
+  <rect x="338" y="350" width="296" height="10" rx="5" fill="#8b5cf6" opacity="0.45"/>
+</svg>

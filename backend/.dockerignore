@@ -1,0 +1,12 @@
+.venv
+venv
+__pycache__
+*.pyc
+.env
+uploads
+audio
+transcripts
+clips
+temp
+jobs.json
+users.json

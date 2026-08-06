@@ -1,0 +1,42 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Node
+node_modules/
+dist/
+
+# Media / Data (auto-generated)
+uploads/
+audio/
+transcripts/
+clips/
+temp/
+backend/jobs.json
+backend/users.json
+users.json
+.jwt_secret
+
+# Local Supabase CLI metadata and bundled audio samples
+supabase/.temp/
+backend/assets/music/
+
+# Local command-line tools
+.tools/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store

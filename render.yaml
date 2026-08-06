@@ -1,0 +1,44 @@
+services:
+  # 1. The Python Backend (FastAPI + Docker)
+  - type: web
+    name: clipo-api
+    env: docker
+    repo: https://github.com/SACHINN122/Clipo
+    branch: main
+    rootDir: backend
+    plan: free
+    envVars:
+      # Secrets you will need to fill out in the Render Dashboard:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RENDER
+        value: "true"
+      - key: BACKEND_URL
+        value: "https://clipo-backend-mh49.onrender.com"
+      - key: FRONTEND_URLS
+        value: "https://clipoai.onrender.com,http://localhost:5173"
+      - key: WHISPER_DEVICE
+        value: cpu
+      - key: WHISPER_COMPUTE_TYPE
+        value: int8
+
+  # 2. The React Frontend
+  - type: web
+    name: clipo
+    runtime: static
+    repo: https://github.com/SACHINN122/Clipo
+    branch: main
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        # This automatically grabs the public URL of the backend above!
+        fromService:
+          type: web
+          name: clipo-api
+          envVarKey: RENDER_EXTERNAL_URL
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
