@@ -105,7 +105,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Clipo AI",
     description="Convert long-form videos into engaging short-form clips using AI.",
-    version="1.0.1",
+    version="1.0.2",
     lifespan=lifespan,
 )
 

@@ -240,7 +240,7 @@ if not BACKEND_ID:
             break
     BACKEND_ID = _auto_id or "local-dev"
 BACKEND_NAME = os.getenv("BACKEND_NAME", BACKEND_ID)
-BACKEND_VERSION = os.getenv("BACKEND_VERSION", "1.0.1")
+BACKEND_VERSION = os.getenv("BACKEND_VERSION", "1.0.2")
 BACKEND_REGION = os.getenv("BACKEND_REGION", "unknown")
 INSTANCE_ID = os.getenv("INSTANCE_ID", "") or uuid.uuid4().hex[:12]
 
