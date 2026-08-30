@@ -27,6 +27,71 @@ jobs: dict[str, dict] = {}
 _JOBS_FILE = Path(__file__).resolve().parent.parent / "jobs.json"
 
 
+def _apply_clip_options(
+    clip_timestamps: list,
+    options: dict,
+) -> list:
+    """Adjust the AI-detected moments to honor the user's clip options.
+
+    ``options`` may contain ``clip_duration`` (target seconds per clip) and/or
+    ``clip_count`` (max number of clips).
+
+    When a target duration is chosen, each detected moment is split into
+    consecutive sub-clips no longer than that duration, so fewer, longer clips
+    become more, shorter ones. When a max count is chosen and we have more
+    sub-clips than allowed, only the best-scoring ones are kept.
+    """
+    from models.schemas import ClipTimestamp
+
+    target_duration = options.get("clip_duration")
+    target_count = options.get("clip_count")
+
+    slices: list[ClipTimestamp] = []
+    for clip in clip_timestamps:
+        start, end = clip.start, clip.end
+        if target_duration and target_duration > 0:
+            while end - start > target_duration:
+                slice_end = start + target_duration
+                slices.append(
+                    ClipTimestamp(
+                        title=clip.title,
+                        start=start,
+                        end=slice_end,
+                        reason=clip.reason,
+                        hook_strength=clip.hook_strength,
+                        quality_score=clip.quality_score,
+                        engagement_prediction=clip.engagement_prediction,
+                    )
+                )
+                start = slice_end
+        if end - start > 1:
+            slices.append(
+                ClipTimestamp(
+                    title=clip.title,
+                    start=start,
+                    end=end,
+                    reason=clip.reason,
+                    hook_strength=clip.hook_strength,
+                    quality_score=clip.quality_score,
+                    engagement_prediction=clip.engagement_prediction,
+                )
+            )
+
+    if not slices:
+        return clip_timestamps
+
+    if target_count and target_count > 0 and len(slices) > target_count:
+        ranked = sorted(
+            slices,
+            key=lambda c: ((c.quality_score or 0) + (c.hook_strength or 0)),
+            reverse=True,
+        )
+        slices = ranked[:target_count]
+        slices.sort(key=lambda c: c.start)
+
+    return slices
+
+
 def _save_jobs() -> None:
     _JOBS_FILE.write_text(json.dumps(jobs, indent=2, default=str))
 
@@ -81,6 +146,7 @@ def create_job(job_id: str, source_type: str, **kwargs) -> dict:
         "youtube_url": kwargs.get("youtube_url"),
         "video_title": kwargs.get("video_title", ""),
         "user_id": kwargs.get("user_id"),
+        "clip_options": kwargs.get("clip_options") or {},
         "created_at": datetime.now(timezone.utc),
         "duration": None,
         "current_step": "Waiting",
@@ -179,6 +245,7 @@ def get_processing_status(job_id: str) -> dict | None:
         "created_at": job["created_at"],
         "duration": job["duration"],
         "ai_usage": AIUsageInfo(**job["ai_usage"]) if job.get("ai_usage") else None,
+        "clip_options": job.get("clip_options") or {},
         "clips_generated": len(job.get("clips", [])),
     }
 
@@ -323,6 +390,11 @@ async def run_pipeline(job_id: str, whisper_model: Any):
             f"{provider_name} found {len(clip_timestamps)} moments"
             + (f" — e.g. \"{reason_preview}\"" if reason_preview else "")
         )
+
+        # --- Honor user clip options (duration / count) ---
+        clip_options = job.get("clip_options") or {}
+        if clip_options:
+            clip_timestamps = _apply_clip_options(clip_timestamps, clip_options)
 
         # --- Step 4: Generate Clips ---
         job["status"] = JobStatus.GENERATING_CLIPS

@@ -27,6 +27,22 @@ class JobStatus(str, Enum):
 
 class YouTubeRequest(BaseModel):
     url: str = Field(..., description="YouTube video URL")
+    clip_duration: Optional[int] = Field(
+        default=None, ge=5, le=120, description="User-selected target clip duration in seconds"
+    )
+    clip_count: Optional[int] = Field(
+        default=None, ge=1, le=50, description="User-selected max number of clips to generate"
+    )
+
+
+class ClipOptions(BaseModel):
+    """User-selected clip generation options (duration and desired count)."""
+    clip_duration: Optional[int] = Field(
+        default=None, ge=5, le=120, description="Target duration per clip in seconds"
+    )
+    clip_count: Optional[int] = Field(
+        default=None, ge=1, le=50, description="Max number of clips to generate"
+    )
 
 
 # --- Response Models ---
@@ -64,6 +80,7 @@ class ProcessingStatus(BaseModel):
     created_at: datetime
     duration: Optional[float] = None
     ai_usage: Optional[AIUsageInfo] = None
+    clip_options: dict = Field(default_factory=dict)
     clips_generated: int = 0
 
 

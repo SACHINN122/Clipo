@@ -2878,6 +2878,65 @@ body {
   font-size: 11px
 }
 
+.clip-settings {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px
+}
+
+.clip-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0
+}
+
+.clip-setting>span {
+  font-size: 11px;
+  color: #85838e
+}
+
+.clip-select {
+  position: relative
+}
+
+.clip-select select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #37343d;
+  background: #111114;
+  color: white;
+  font: 500 13px var(--font-sans);
+  padding: 10px 32px 10px 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  outline: 0
+}
+
+.clip-select select:focus {
+  border-color: #8b5cf6
+}
+
+.clip-select:after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #85838e;
+  transform: translateY(-30%)
+}
+
+.clip-select select option {
+  background: #111114;
+  color: white
+}
+
 .upload-meta span+span:before {
   content: '·';
   color: #504e58;
