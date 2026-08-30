@@ -90,10 +90,12 @@ export async function getConfig() {
 /**
  * Upload a video file with progress tracking.
  */
-export function uploadVideo(file, onProgress) {
+export function uploadVideo(file, onProgress, options = {}) {
   return new Promise((resolve, reject) => {
     const formData = new FormData();
     formData.append('file', file);
+    if (options.clipDuration != null) formData.append('clip_duration', String(options.clipDuration));
+    if (options.clipCount != null) formData.append('clip_count', String(options.clipCount));
 
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
@@ -136,11 +138,14 @@ export function uploadVideo(file, onProgress) {
 /**
  * Submit a YouTube URL for processing.
  */
-export async function submitYouTubeUrl(url) {
+export async function submitYouTubeUrl(url, options = {}) {
+  const body = { url };
+  if (options.clipDuration != null) body.clip_duration = options.clipDuration;
+  if (options.clipCount != null) body.clip_count = options.clipCount;
   return apiFetch(`${API_BASE}/api/youtube`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url }),
+    body: JSON.stringify(body),
   });
 }
 

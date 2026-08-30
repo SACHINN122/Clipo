@@ -6,7 +6,7 @@ import asyncio
 import tempfile
 import zipfile
 from pathlib import Path
-from fastapi import APIRouter, UploadFile, File, HTTPException, Request
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 import subprocess
@@ -262,8 +262,28 @@ async def get_config():
     }
 
 
+def _parse_clip_options(clip_duration, clip_count) -> dict:
+    """Coerce user clip options into a validated dict of ints (or empty dict)."""
+    opts: dict = {}
+    try:
+        d = int(clip_duration) if clip_duration not in (None, "") else None
+        c = int(clip_count) if clip_count not in (None, "") else None
+    except (TypeError, ValueError):
+        return opts
+    if d is not None and 5 <= d <= 120:
+        opts["clip_duration"] = d
+    if c is not None and 1 <= c <= 50:
+        opts["clip_count"] = c
+    return opts
+
+
 @router.post("/upload", response_model=UploadResponse)
-async def upload_video(request: Request, file: UploadFile = File(...)):
+async def upload_video(
+    request: Request,
+    file: UploadFile = File(...),
+    clip_duration: int | None = Form(None),
+    clip_count: int | None = Form(None),
+):
     """Upload a video file and create a processing job."""
     user = get_current_user(request)
     user_id = user["id"] if user else None
@@ -276,6 +296,7 @@ async def upload_video(request: Request, file: UploadFile = File(...)):
         video_path=str(file_path),
         video_title=file.filename,
         user_id=user_id,
+        clip_options=_parse_clip_options(clip_duration, clip_count),
     )
     db.record_event(user_id, "job_uploaded", {"job_id": job_id, "filename": file.filename})
 
@@ -304,6 +325,7 @@ async def submit_youtube_url(req: Request, request: YouTubeRequest):
         youtube_url=url,
         video_title="YouTube Video",
         user_id=user_id,
+        clip_options=_parse_clip_options(request.clip_duration, request.clip_count),
     )
     db.record_event(user_id, "job_youtube", {"job_id": job_id, "url": url})
 

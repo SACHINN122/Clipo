@@ -6,6 +6,8 @@ import StudioHeader from './StudioHeader';
 
 const ACCEPTED_TYPES = '.mp4,.mov,.mkv,.avi';
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 * 1024;
+const CLIP_DURATION_OPTIONS = [15, 20, 25, 30, 45, 60, 90];
+const CLIP_COUNT_OPTIONS = [3, 5, 8, 10, 15, 20, 25];
 const PIPELINE = [
   { label: 'Upload',     icon: 'arrow',  tone: 'cyan',   summary: 'Waiting for your source',      detail: 'MP4, MOV, MKV, or AVI up to 5 GB. YouTube links are downloaded automatically.', duration: '~30 sec' },
   { label: 'Transcribe', icon: 'wave',   tone: 'violet', summary: 'Local, word-level timestamps', detail: 'Whisper runs on your machine. No audio is uploaded to the cloud.',          duration: '1–3 min' },
@@ -84,6 +86,8 @@ export default function UploadScreen({ onProcessingStart, onNavigate, onVisitJob
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [notify, setNotify] = useState(false);
+  const [clipDuration, setClipDuration] = useState(null);
+  const [clipCount, setClipCount] = useState(null);
   const [jobHistory, setJobHistory] = useState(loadJobHistory);
   const [backendConfig, setBackendConfig] = useState(null);
   const [demoStep, setDemoStep] = useState(0);
@@ -121,8 +125,8 @@ export default function UploadScreen({ onProcessingStart, onNavigate, onVisitJob
       let notificationsEnabled = notify;
       if (notify) notificationsEnabled = (await requestNotificationPermission()) === 'granted';
       const response = activeTab === 'file'
-        ? await uploadVideo(file, setUploadProgress)
-        : await submitYouTubeUrl(youtubeUrl.trim());
+        ? await uploadVideo(file, setUploadProgress, { clipDuration, clipCount })
+        : await submitYouTubeUrl(youtubeUrl.trim(), { clipDuration, clipCount });
       const videoName = response.filename || (activeTab === 'youtube' ? 'YouTube video' : file?.name);
       const newJob = {
         jobId: response.job_id,
@@ -182,6 +186,27 @@ export default function UploadScreen({ onProcessingStart, onNavigate, onVisitJob
               <div className="drop-icon"><Icon name={file ? 'check' : 'upload'} /></div>
               {file ? <><strong>{file.name}</strong><span>{formatFileSize(file.size)} · Ready to generate</span></> : <><strong>Drop your video here</strong><span>or click to browse from your computer</span></>}
             </div> : <div className={`url-entry ${youtubeUrl && !validYoutube(youtubeUrl) ? 'has-error' : ''}`}><Icon name="play" /><input autoFocus value={youtubeUrl} onChange={handleYouTubeChange} placeholder="Paste a YouTube URL" /><button onClick={async () => { try { setYoutubeUrl(await navigator.clipboard.readText()); } catch { setError('Paste your URL directly into the field.'); } }}>Paste</button></div>}
+
+            <div className="clip-settings">
+              <label className="clip-setting">
+                <span>Clip duration</span>
+                <div className="clip-select">
+                  <select value={clipDuration ?? ''} disabled={uploading} onChange={(e) => setClipDuration(e.target.value ? Number(e.target.value) : null)}>
+                    <option value="">AI picks</option>
+                    {CLIP_DURATION_OPTIONS.map((d) => <option key={d} value={d}>{d}s</option>)}
+                  </select>
+                </div>
+              </label>
+              <label className="clip-setting">
+                <span>Number of clips</span>
+                <div className="clip-select">
+                  <select value={clipCount ?? ''} disabled={uploading} onChange={(e) => setClipCount(e.target.value ? Number(e.target.value) : null)}>
+                    <option value="">AI picks</option>
+                    {CLIP_COUNT_OPTIONS.map((c) => <option key={c} value={c}>{c} clips</option>)}
+                  </select>
+                </div>
+              </label>
+            </div>
 
             {aiProvider === 'nvidia_nim' && nvidiaConfigured && (
               <div className="ai-provider-badge"><Icon name="cpu" /><span>NVIDIA NIM active</span></div>
